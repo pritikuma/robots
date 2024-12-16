@@ -3,33 +3,29 @@ import random
 from fastapi import FastAPI
 import socketio
 from datetime import datetime, timedelta
-# Create a Socket.IO server
+
 sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=["http://localhost:3000"]  # Frontend's origin
 )
 
-# Load JSON data from file
+
 with open("data/data.json", "r") as file:
     data = json.load(file)
 
-# Create FastAPI app and attach Socket.IO
+
 app = FastAPI()
 app.mount("/", socketio.ASGIApp(sio))
 
 def random_datetime(start, end):
-    
-    # Get the total seconds between start and end
     delta = end - start
     int_delta = int(delta.total_seconds())
-    
-    # Generate a random number of seconds to add to `start`
+
     random_second = random.randint(0, int_delta)
     random_date = start + timedelta(seconds=random_second)
-    
-    # Return the formatted datetime
+
     return random_date.strftime("%Y-%m-%d %H:%M:%S")
-# Handle socket connection
+
 @sio.event
 async def connect(sid, environ):
     global random_data
@@ -53,9 +49,7 @@ async def connect(sid, environ):
                 ],
             }
             random_data.append(k)
-    
 
-# Handle socket event for sending random data
 @sio.event
 async def get_random_data(sid):
     if(random_data):
